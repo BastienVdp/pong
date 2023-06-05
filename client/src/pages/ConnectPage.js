@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom";
+import {useSocketEvents} from "../hooks/useSocketEvents";
+import {useAppContext} from "../contexts/AppContext";
 
-export default function ConnectPage({ props, socket }) {
+export default function ConnectPage({ socket }) {
 
+	const { setRoom, setPlayers } = useAppContext()
 	const navigate = useNavigate();
 	const [username, setUsername] = useState('')
 
+	const events = [
+		{
+			name: 'room:data',
+			callback: (data) => {
+				setRoom(data.room)
+				setPlayers(data.players)
+				navigate(`/room/${data.room}`)
+			}
+		}
+	]
+
+	useSocketEvents(events)
 	const handleCreateRoom = () => {
 		if(!username) return console.log('Please enter a username');
 
@@ -13,11 +28,6 @@ export default function ConnectPage({ props, socket }) {
 			if(error) return console.log(error)
 		}))
 	}
-
-	useEffect(() => {
-		socket.on('roomData', data => navigate(`/room/${data.room}`))
-		return () => socket.off('roomData')
-	}, [])
 	
 	return <>
 		<h1>Commencez à jouer</h1>

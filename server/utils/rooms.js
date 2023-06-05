@@ -10,32 +10,30 @@ module.exports = handleRoom = (client, io, rooms) => {
 	client.on('getRooms', () => {
         io.emit("availableRooms", rooms)
     })
-
-	client.on('getRoomData', (id, callback) => {
-		const cb = getRoomById(id, rooms)
-		if(cb.error) return callback(cb.error)
-		return callback(cb.room)
-		// io.emit('lastRoom', cb.room)
-	})
+	// client.on('getRoomById', ({ roomId }) => {
+	//
+	// 	io.emit('getRoomId', getRoomById(roomId, rooms), rooms)
+	// })
 
 	client.on('handleRoom', (player, callback) => {
 		if(getAvailableRooms(rooms).length) { // if there are available rooms
-			const cb = joinUserToRoom(getAvailableRooms(rooms)[0].id, { id: client.id, ...player}, rooms) 
-			if(cb.error) return callback(cb.error) 
+			const { error, room } = joinUserToRoom(getAvailableRooms(rooms)[0].id, { id: client.id, ...player}, rooms)
+			if(error) return callback(error)
 
-			client.join(cb.room.id)
-			io.to(cb.room.id).emit('roomData', {
-				room: cb.room.id,
-				players: cb.room.players
+			client.join(room.id)
+			io.to(room.id).emit('room:data', {
+				room: room.id,
+				players: room.players
 			})
-		} else { // no avaible rooms
-			const cb = createRoom({ id: client.id, ...player}, rooms);
-			if(cb.error) return callback(cb.error)
+			io.to(room.id).emit('game:start', {})
+		} else { // no avaible rooms : create room
+			const { error, room} = createRoom({ id: client.id, ...player}, rooms);
+			if(error) return callback(error)
 
-			client.join(cb.room.id)
-			io.to(cb.room.id).emit('roomData', {
-				room: cb.room.id,
-				players: cb.room.players
+			client.join(room.id)
+			io.to(room.id).emit('room:data', {
+				room: room.id,
+				players: room.players
 			})
 		}
 		callback()

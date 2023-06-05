@@ -15,17 +15,16 @@ export default function ConnectPage({ socket }) {
 			callback: (data) => {
 				setRoom(data.room)
 				setPlayers(data.players)
-				navigate(`/room/${data.room}`)
+				navigate(`/controller/${data.room}/${socket.id}`)
 			}
 		}
 	]
 
 	useSocketEvents(events)
 	const handleCreateRoom = () => {
-		if(!username) return console.log('Please enter a username');
-
+		if(!username) return alert('enter an username')
 		socket.emit('handleRoom', { username }, (error => {
-			if(error) return console.log(error)
+			if(error) return alert(error)
 		}))
 	}
 	

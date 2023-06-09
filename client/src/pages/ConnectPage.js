@@ -1,21 +1,33 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useSocketEvents} from "../hooks/useSocketEvents";
 import {useAppContext} from "../contexts/AppContext";
+import {logDOM} from "@testing-library/react";
 
 export default function ConnectPage({ socket }) {
 
-	const { setRoom, setPlayers } = useAppContext()
 	const navigate = useNavigate();
 	const [username, setUsername] = useState('')
 
 	const events = [
 		{
-			name: 'room:data',
+			name: 'room:created',
 			callback: (data) => {
-				setRoom(data.room)
-				setPlayers(data.players)
+				console.log('created room', data)
 				navigate(`/controller/${data.room}/${socket.id}`)
+			}
+		},
+		{
+			name: 'room:join',
+			callback: (data) => {
+				console.log('joigned room', data)
+				navigate(`/controller/${data.room}/${socket.id}`)
+			}
+		},
+		{
+			name: 'queue:join',
+			callback: (data) => {
+				navigate(`/queue`)
 			}
 		}
 	]
@@ -23,7 +35,7 @@ export default function ConnectPage({ socket }) {
 	useSocketEvents(events)
 	const handleCreateRoom = () => {
 		if(!username) return alert('enter an username')
-		socket.emit('handleRoom', { username }, (error => {
+		socket.emit('onPlayerConnected', { username }, (error => {
 			if(error) return alert(error)
 		}))
 	}

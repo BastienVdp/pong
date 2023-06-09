@@ -1,40 +1,37 @@
 import { useEffect, useRef, useState } from 'react'
-import {useLocation, useParams} from 'react-router-dom'
+import {useLocation, useNavigate, useParams} from 'react-router-dom'
 import {useSocketEvents} from "../hooks/useSocketEvents";
 import {useAppContext} from "../contexts/AppContext";
 import GamePong from "../components/GamePong";
 
-export default function GamePage({ socket }) {
+export default function GamePage({ socket, gameToken, players }) {
 
-  const { roomId } = useParams()
-  const { players, setPlayers } = useAppContext()
+  const navigate = useNavigate()
 
   const currentPlayer = useRef('')
   const roomRef = useRef()
 
   const events = [
     {
-      name: 'room:data',
-      callback: (data) => {
-        setPlayers(data.room.players)
+      name: 'room:left',
+      callback: () => {
+        console.log('player left')
       }
-    }
+    },
+
   ]
 
   useSocketEvents(events)
 
-  useEffect(() => {
-    socket.emit('getRoomData', roomId)
-  }, [])
-
   const finishGame = () => {
-    socket.emit('game:finished', roomId)
+    socket.emit('game:finished', gameToken)
   }
 
   return <div>
+    <h1>Game: {gameToken}</h1>
     {players.length < 2 ? <div>Waiting for player...</div>
     : <div>
-          {players.map(p => <h2>{p.username}</h2>)}
+          {players.map(p => <h2 key={p.id}>{p.username}</h2>)}
     </div>}
     <button
       onClick={e => finishGame()}>

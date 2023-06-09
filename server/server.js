@@ -21,15 +21,17 @@ const io = new Server(server, {
 const PORT = 3001;
 
 const handleRoom = require("./utils/rooms");
+const handleDisconnect = require("./utils/disconnect")
+const queue = [];
 
-const rooms = [];
+const room = []
 
 io.on("connect", (socket) => {
 	console.log("user connected : ", socket.id)
-	handleRoom(socket, io, rooms)
+	handleRoom(socket, io, room, queue)
 
 	socket.on("disconnect", () => {
-		console.log("user disconnected", socket.id);
+		handleDisconnect(socket, io, room, queue)
 	});
 });
 

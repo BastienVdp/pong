@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {useLocation, useNavigate, useParams} from 'react-router-dom'
 import {useSocketEvents} from "../hooks/useSocketEvents";
 import {useAppContext} from "../contexts/AppContext";
-import GamePong from "../components/GamePong";
+import GamePong from "./GamePong";
 
 export default function GamePage({ socket, gameToken, players }) {
 

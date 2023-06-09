@@ -2,18 +2,18 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useSocketEvents} from "../hooks/useSocketEvents";
 import {useState} from "react";
 
-export default function Controller({socket})
+export default function Controller({socket, gameToken, player})
 {
     const navigate = useNavigate()
-    const { roomId, userId } = useParams()
 
     const [gameDone, setGameDone] = useState(false)
+
     const goUp = () => {
-        socket.emit('controller:up', roomId, userId)
+        socket.emit('controller:up', gameToken, player.id)
     }
 
     const goDown = () => {
-        socket.emit('controller:down', roomId, userId)
+        socket.emit('controller:down', gameToken, player.id)
     }
 
     const events = [
@@ -36,8 +36,9 @@ export default function Controller({socket})
         ) : (
             <div>
                 Controller Game :<br />
-                roomId : {roomId} <br/>
-                userId: {userId}<br />
+                roomId : {gameToken} <br/>
+                username : {player.username}<br/>
+                userId: {player.id}<br />
                 socketId : {socket.id}<br/>
                 <hr />
                 <button onClick={e => goUp()}>

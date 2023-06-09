@@ -20,19 +20,14 @@ const io = new Server(server, {
 
 const PORT = 3001;
 
-const handleRoom = require("./utils/rooms");
-const handleDisconnect = require("./utils/disconnect")
+const handleGame = require("./app/game");
 const queue = [];
 
 const room = []
 
 io.on("connect", (socket) => {
 	console.log("user connected : ", socket.id)
-	handleRoom(socket, io, room, queue)
-
-	socket.on("disconnect", () => {
-		handleDisconnect(socket, io, room, queue)
-	});
+	handleGame(socket, io, room, queue)
 });
 
 server.listen(PORT, () => {

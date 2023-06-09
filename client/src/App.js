@@ -2,8 +2,8 @@ import { Route, Routes } from "react-router-dom"
 
 import io from "socket.io-client"
 
-import HomePage from "./pages/HomePage"
-import GamePage from "./pages/GamePage"
+import Viewer from "./pages/Viewer"
+import GamePage from "./components/GamePage"
 import ConnectPage from "./pages/ConnectPage"
 import {AppProvider} from "./contexts/AppContext";
 import Controller from "./components/Controller";
@@ -15,10 +15,8 @@ function App() {
   return <>
   <AppProvider>
     <Routes>
-        <Route path="/" exact element={<HomePage socket={socket}/>} />
-        <Route path="/controller/:roomId/:userId" element={<Controller socket={socket} />} />
-        <Route path="/queue" element={<Queue socket={socket} />} />
-        <Route path="/connect" element={<ConnectPage socket={socket}/>} />
+        <Route path="/viewer" exact element={<Viewer socket={socket}/>} />
+        <Route path="/" exact element={<ConnectPage socket={socket}/>} />
     </Routes>
   </AppProvider>
 

@@ -41,13 +41,8 @@ const checkIfUserInQueue = (id, queue) => {
 }
 
 const removeUserToQueue = (id, queue) => {
-    const index = queue.findIndex(player => player.id === id)
-    if(index !== -1) {
-        return { newQueue: queue.slice(index, 1)}
-    }
+    queue = queue.filter(player => player.id !== id);
+    return { newQueue: queue}
 }
 
-// const removeUserToRoom = (id, room) => {
-//     return
-// }
 module.exports = { createRoom, joinUserToRoom, isRoomAvailable, getRoomById, joinUserToQueue, checkIfUserInRoom, checkIfUserInQueue, removeUserToQueue}

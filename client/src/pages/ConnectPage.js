@@ -3,51 +3,104 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useSocketEvents} from "../hooks/useSocketEvents";
 import {useAppContext} from "../contexts/AppContext";
 import {logDOM} from "@testing-library/react";
+import Controller from "../components/Controller";
+import Queue from "../components/Queue";
+import Welcome from "../components/Welcome";
 
 export default function ConnectPage({ socket }) {
 
 	const navigate = useNavigate();
-	const [username, setUsername] = useState('')
+
+	const [gameToken, setGameToken] = useState('')
+	const [players, setPlayers] = useState([])
+	const [isConnected, setIsConnected] = useState(false)
+	const [playersInQueue, setPlayersInQueue] = useState([])
+	const [isInQueue, setIsInQueue] = useState(false)
 
 	const events = [
 		{
 			name: 'room:created',
 			callback: (data) => {
-				console.log('created room', data)
-				navigate(`/controller/${data.room}/${socket.id}`)
+				console.log('create room')
+				setGameToken(data.room)
+				setPlayers(data.players)
 			}
 		},
 		{
 			name: 'room:join',
 			callback: (data) => {
-				console.log('joigned room', data)
-				navigate(`/controller/${data.room}/${socket.id}`)
+				console.log('join room')
+				setGameToken(data.room)
+				setPlayers(data.players)
 			}
 		},
 		{
-			name: 'queue:join',
+			name: 'room:isAvailable',
+			callback: (queue) => {
+				console.log('room available')
+				if(queue.length >= 2) {
+					if(socket.id === queue[0].id || socket.id === queue[1].id) {
+						socket.emit('room:joinFromQueue', [queue[0], queue[1]])
+					}
+				}
+			}
+		},
+		{
+		    name: 'room:go-to-controller',
+		    callback: (data) => {
+				console.log('go to controller')
+				console.log(players, data.players)
+				setGameToken(data.room)
+				setPlayers(data.players)
+		        // navigate(`/controller/${data.room}/${socket.id}`)
+		    }
+		},
+		{
+			name: 'queue:update',
 			callback: (data) => {
-				navigate(`/queue`)
+				setPlayersInQueue(
+					data.queue
+				)
 			}
 		}
 	]
 
 	useSocketEvents(events)
-	const handleCreateRoom = () => {
-		if(!username) return alert('enter an username')
-		socket.emit('onPlayerConnected', { username }, (error => {
-			if(error) return alert(error)
-		}))
-	}
-	
+
+
+
+	useEffect(() => {
+		setIsConnected(
+			players.length ? (
+				players.some(p => p.id === socket.id)
+			) : false
+		)
+	}, [players])
+
+	useEffect(() => {
+		setIsInQueue(
+			playersInQueue.length ? (
+				playersInQueue.some(p => p.id === socket.id)
+			) : false
+		)
+	}, [playersInQueue])
+
 	return <>
-		<h1>Commencez à jouer</h1>
-		<input 
-			type="text" 
-			placeholder="Username"
-			value={username} 
-			onChange={e => setUsername(e.target.value)} 
-		/>
-		<button onClick={handleCreateRoom}>Create Room</button>
+		<div>
+			socketId : {socket.id}
+		</div>
+		{isConnected ? (
+			<Controller
+				socket={socket}
+				gameToken={gameToken}
+				player={players?.find(p => p.id === socket.id)}
+			/>
+		) : isInQueue ? (
+			<Queue
+				socket={socket}
+				playersInQueue={playersInQueue}
+			/>
+		) : <Welcome socket={socket} /> }
+
 	</>
 }
